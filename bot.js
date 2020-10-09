@@ -99,7 +99,12 @@ client.on('message' , (message)=>{
           
         }else if (CMD_NAME === 'cts'){
 
-            puppeteer.launch({ headless: true }).then(async browser => {
+            puppeteer.launch({
+                args: [
+                  '--no-sandbox',
+                  '--disable-setuid-sandbox',
+                ],
+              }).then(async browser => {
                 message.channel.send('Gathering Data From DFP....');
                 const page = await browser.newPage()
                 
