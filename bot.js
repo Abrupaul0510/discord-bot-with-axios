@@ -141,8 +141,30 @@ client.on('message' , (message)=>{
                 
               })
             
+        }else if(CMD_NAME === 'help'){
+
+            const exampleEmbed = new Discord.MessageEmbed()
+            .setColor('#3c00ff')
+            .setTitle('Hello! this is DFP Discord Bot')
+            .addFields(     
+                { name: 'Available Commands:' },
+            )
+            .addFields(
+               
+                { name: '!check', value: 'To check DF marketplace', inline: true },
+                { name: '!cts',  value: 'Show Top 5 weekly clan top survivor', inline: true },
+            )
+            .setTimestamp()
+            .setFooter('Test Bot by Glenn');
+
+            message.channel.send(exampleEmbed);
+            
+
+
+
+               
         }else{
-            message.channel.send('Invalid command sier');    
+            message.channel.send('Invalid command Sier'); 
         }
 
 
