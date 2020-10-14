@@ -184,7 +184,7 @@ client.on('message' , (message)=>{
                 { name: '!chsez', value: '-To check DF marketplace SEZ'},
             )
             .setTimestamp()
-            .setFooter('Kannazuki Bot🤖');
+            .setFooter('Kannazuki Bot🤖-GlennRhee');
 
             message.channel.send(exampleEmbed);
             
