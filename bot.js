@@ -22,6 +22,10 @@ const PREFIX = "!";
 
 client.on('ready', ()=>{
     console.log('You login Glenn');
+    console.log("Servers:")
+    client.guilds.cache.forEach((guild) => {
+        console.log(" - " + guild.name)
+    })
 });
 client.on('message' , (message)=>{
     if (message.author.bot) return;
