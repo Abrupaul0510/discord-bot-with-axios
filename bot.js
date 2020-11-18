@@ -560,9 +560,7 @@ client.on("message", (message) => {
           const memberid = id.split("/")[3];
           (async () => {
             const response2 = await fetch(
-              "http://www.hollowprestige.com/umbraco/api/df/getplayerstats?userId=" +
-                memberid +
-                "",
+              "http://www.hollowprestige.com/umbraco/api/df/getplayerstats?userId="+memberid+"",
               {
                 credentials: "omit",
                 headers: {
@@ -610,10 +608,7 @@ client.on("message", (message) => {
             const exampleEmbed = new Discord.MessageEmbed();
             exampleEmbed.setColor("#3c00ff");
             exampleEmbed.setTitle("Player Profile of " + namemember + "");
-            exampleEmbed.setImage(
-              "http://www.dfprofiler.com/signaturereplicate.php?profile=" +
-                idmember
-            );
+            exampleEmbed.setImage("http://www.dfprofiler.com/signaturereplicate.php?profile="+idmember+'');
 
             exampleEmbed.addFields({
               name: "ℹ️Extra Information:",
@@ -909,6 +904,9 @@ client.on("message", (message) => {
           kanacts.push(obj);
         }
         return kanacts;
+      }).catch(function (error) {
+        // handle error
+        console.log(error);
       });
     return await data;
   }
