@@ -175,6 +175,7 @@ client.on("message", (message) => {
         .addFields({ name: "!chsez", value: "-To check DF marketplace SEZ" })
         .addFields({ name: "!profile playername", value: "-Player profile" })
         .addFields({ name: "!kanawts", value: "-Show Kannazuki WeeklyTS" })
+        .addFields({ name: "!private playername", value: "-Show Player Private Trade" })
         .setTimestamp()
         .setFooter("Kannazuki Bot🤖-GlennRhee");
 
@@ -455,6 +456,52 @@ client.on("message", (message) => {
         .catch(function (error) {
           message.channel.send("Item not found mister");
         });
+    }else if (CMD_NAME === 'private'){
+      if (args.length === 0) return message.reply("Hey! Give Me A Player Name");
+      var playername = args.join(" ");
+      getPlayerID(playername).then(data =>{
+        var id = data.split("com")[1];
+        if (id === "/") {
+          message.channel.send('Player "' + playername + '" is not found or not in database.'
+          );
+        }else{
+          const playerid = id.split("/")[3];
+          getPrivateTrades(playerid).then(datalist =>{
+            if(datalist[0] === true){
+              console.log(datalist)
+              const exampleEmbed = new Discord.MessageEmbed()
+              exampleEmbed.setColor("#3c00ff")
+              exampleEmbed.setTitle(playername +' current private trades')
+              for(var i=1; i<datalist.length; i++){
+               const price =  thousands_separators(datalist[i]['price'])
+                
+                exampleEmbed.addFields({ name: '('+i+') '+datalist[i]['name']+' [$'+price+']', value:  'Seller: '+datalist[i]['sellerName']+' | Buyer: '+datalist[i]['buyerName']+'' })
+
+              }
+              exampleEmbed.setTimestamp()
+              exampleEmbed.setFooter("Kannazuki Bot🤖");
+      
+              message.channel.send(exampleEmbed);
+            }else{
+              message.channel.send(playername+' doesnt have any private trade atm')
+            }
+
+
+
+
+
+          })
+        }
+      }).catch(function (error) {
+        console.log('Error')
+        console.log(error)
+      });
+
+
+
+
+
+
     } else if (CMD_NAME === "chsez") {
       if (args.length === 0) return message.reply("Give me an item name sier");
       var items = args.join(" ");
@@ -910,6 +957,62 @@ client.on("message", (message) => {
       });
     return await data;
   }
+
+
+  async function getPlayerID(playername){
+
+    const response = await fetch(
+      "http://www.dfprofiler.com/search/simple",
+      {
+        credentials: "include",
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:81.0) Gecko/20100101 Firefox/81.0",
+          Accept:
+            "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+          "Accept-Language": "en-US,en;q=0.5",
+          "Content-Type": "application/x-www-form-urlencoded",
+          "Upgrade-Insecure-Requests": "1",
+          Pragma: "no-cache",
+          "Cache-Control": "no-cache",
+        },
+        referrer: "http://www.dfprofiler.com/",
+        body: "username=" + playername + "&csrf=",
+        method: "POST",
+        mode: "cors",
+      }
+    );
+
+    const resultdata = await response
+    const result = resultdata.url
+    return await result
+
+  }
+
+  async function getPrivateTrades(playerid){
+    var data1 = {
+      userId: playerid,
+      stalkType: "private" // sellinglist  // private
+    };
+    var sentdata = Object.keys(data1)
+          .map((key) => key + "=" + data1[key])
+          .join("&");
+    var url = 'http://meaty.dfprofiler.com/stalker.php?function=browseTrades'
+    const result = await axios({
+      method: "post",
+      url: url,
+      data: sentdata,
+    })
+    .then(function (response) {
+      return response.data
+    })
+    .catch(function (error) {
+      console.log(error);
+    });
+  
+  return result
+} 
+
 });
 
 client.login(process.env.token);
