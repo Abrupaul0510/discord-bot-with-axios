@@ -17,6 +17,7 @@ const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
 
 const Discord = require("discord.js");
+const console = require("console");
 const client = new Client();
 const PREFIX = "!";
 
@@ -182,35 +183,24 @@ client.on("message", (message) => {
       message.channel.send(exampleEmbed);
     } else if (CMD_NAME === "boss") {
       (async () => {
-        const response = await fetch(
-          "https://bossmap.dfprofiler.com/bosscode.php",
-          {
-            credentials: "include",
-            headers: {
-              "User-Agent":
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:81.0) Gecko/20100101 Firefox/81.0",
-              Accept: "*/*",
+        const response = await fetch("https://www.dfprofiler.com/bossmap/json", {
+          "credentials": "include",
+          "headers": {
+              "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0",
+              "Accept": "application/json, text/javascript, */*; q=0.01",
               "Accept-Language": "en-US,en;q=0.5",
-              "Content-Type":
-                "application/x-www-form-urlencoded; charset=UTF-8",
-              "X-Requested-With": "XMLHttpRequest",
-              Pragma: "no-cache",
-              "Cache-Control": "no-cache",
-            },
-            referrer:
-              "https://bossmap.dfprofiler.com/bossmap.php?nocache=1603008868",
-            body:
-              "skey=RqXNvYAHgPELLrAGecnEvpqAgHGZxCbGskQiisHHCcuQYNUegHwYcyLpdEYDgbLK",
-            method: "POST",
-            mode: "cors",
-          }
-        );
+              "X-Requested-With": "XMLHttpRequest"
+          },
+          "referrer": "https://www.dfprofiler.com/bossmap",
+          "method": "GET",
+          "mode": "cors"
+      });
 
         const data = await response.json();
         var currentbossarr = [];
         var lastbossarr = [];
-        const sertime = data["server"]["time"];
-        var servertime = unixTime(sertime);
+        // const sertime = data["server"]["time"];
+        // var servertime = unixTime(sertime);
 
         for (var i = 0; i < Object.keys(data).length; i++) {
           var currentbossobj = {};
@@ -255,6 +245,7 @@ client.on("message", (message) => {
               }
 
               case "oldboss": {
+                console.log('last boss')
                 const boss_locations = data[key]["locations"];
                 const boss_name = data[key]["special_enemy_type"];
                 const end_time = data[key]["end_time"];
@@ -292,11 +283,11 @@ client.on("message", (message) => {
             }
           }
         }
-        // console.log("CURRENT")
-        // console.log(currentbossarr)
+        console.log("CURRENT")
+        console.log(currentbossarr)
 
-        // console.log("LAST")
-        // console.log(lastbossarr)
+        console.log("LAST")
+        console.log(lastbossarr)
 
         const currentBoss = new Discord.MessageEmbed();
         currentBoss.setColor("#3c00ff");
@@ -460,22 +451,22 @@ client.on("message", (message) => {
       if (args.length === 0) return message.reply("Hey! Give Me A Player Name");
       var playername = args.join(" ");
       getPlayerID(playername).then(data =>{
-        var id = data.split("com")[1];
-        if (id === "/") {
+        if (data === "No data") {
           message.channel.send('Player "' + playername + '" is not found or not in database.'
           );
         }else{
-          const playerid = id.split("/")[3];
+          var playerid = data[0]['player_id'];
           getPrivateTrades(playerid).then(datalist =>{
-            if(datalist[0] === true){
-              console.log(datalist)
+            // console.log(datalist)
+            // console.log(datalist.length)
+            if(datalist.length !== 0){
               const exampleEmbed = new Discord.MessageEmbed()
               exampleEmbed.setColor("#3c00ff")
-              exampleEmbed.setTitle(playername +' current private trades')
+              exampleEmbed.setTitle(playername +' Current private trades')
               for(var i=1; i<datalist.length; i++){
-               const price =  thousands_separators(datalist[i]['price'])
+               const price =  thousands_separators(datalist[i]['private_price'])
                 
-                exampleEmbed.addFields({ name: '('+i+') '+datalist[i]['name']+' [$'+price+']', value:  'Seller: '+datalist[i]['sellerName']+' | Buyer: '+datalist[i]['buyerName']+'' })
+                exampleEmbed.addFields({ name: '['+i+'] '+datalist[i]['private_item']+'-'+datalist[i]['private_orgitem']+' for [$'+price+']', value:  'Buyer: '+datalist[i]['private_to_mem_id']+'('+datalist[i]['private_to']+')' })
 
               }
               exampleEmbed.setTimestamp()
@@ -485,11 +476,6 @@ client.on("message", (message) => {
             }else{
               message.channel.send(playername+' doesnt have any private trade atm')
             }
-
-
-
-
-
           })
         }
       }).catch(function (error) {
@@ -569,132 +555,226 @@ client.on("message", (message) => {
     } else if (CMD_NAME === "profile") {
       if (args.length === 0) return message.reply("Hey! Give Me A Player Name");
       var playername = args.join(" ");
-
-      (async () => {
-        const response = await fetch(
-          "http://www.dfprofiler.com/search/simple",
-          {
-            credentials: "include",
-            headers: {
-              "User-Agent":
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:81.0) Gecko/20100101 Firefox/81.0",
-              Accept:
-                "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-              "Accept-Language": "en-US,en;q=0.5",
-              "Content-Type": "application/x-www-form-urlencoded",
-              "Upgrade-Insecure-Requests": "1",
-              Pragma: "no-cache",
-              "Cache-Control": "no-cache",
-            },
-            referrer: "http://www.dfprofiler.com/",
-            body: "username=" + playername + "&csrf=",
-            method: "POST",
-            mode: "cors",
-          }
-        );
-
-        var data = await response;
-
-        var link = await data.url;
-        var id = link.split("com")[1];
-        //console.log(id);
-
-        if (id === "/") {
-          message.channel.send(
-            'Player "' + playername + '" is not found or not in database.'
-          );
-        } else {
-          const memberid = id.split("/")[3];
-          (async () => {
-            const response2 = await fetch(
-              "http://www.hollowprestige.com/umbraco/api/df/getplayerstats?userId="+memberid+"",
-              {
-                credentials: "omit",
-                headers: {
-                  "User-Agent":
-                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:81.0) Gecko/20100101 Firefox/81.0",
-                  Accept:
-                    "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-                  "Accept-Language": "en-US,en;q=0.5",
-                  "Upgrade-Insecure-Requests": "1",
-                  Pragma: "no-cache",
-                  "Cache-Control": "no-cache",
-                },
-                method: "GET",
-                mode: "cors",
-              }
-            );
-            const playerstats = await response2.text();
-            const split1 = await playerstats.split(">");
-            const last = split1[1];
-
-            const data = last.split("<");
-            const playerData = JSON.parse(data[0]);
-
-            var idmember = playerData["id_member"];
-            var namemember = playerData["df_name"];
-
-            var wts = thousands_separators(playerData["df_expdeath_weekly"]);
-            var currentcash = thousands_separators(playerData["df_cash"]);
-            var bankcash = thousands_separators(playerData["df_bankcash"]);
-            var creds = thousands_separators(playerData["df_credits"]);
-            var myinv = [];
-            var totalslot = playerData["df_invslots"];
-            var xp = playerData["df_positionx"];
-            var yp = playerData["df_positiony"];
-            var currentPosition = getCorPlayer(xp, yp);
-
-            for (var i = 1; i < totalslot; i++) {
-              const inv = playerData["df_inv" + i + "_type"];
-              const inven = "Slot " + i + " : " + inv + "\n";
-              myinv.push(inven);
+      console.log(playername)
+      if (!isNaN(playername)){
+        console.log('not a number')
+        const memberid = playername;
+        (async () => {
+          const response2 = await fetch(
+            "http://www.hollowprestige.com/umbraco/api/df/getplayerstats?userId="+memberid+"",
+            {
+              credentials: "omit",
+              headers: {
+                "User-Agent":
+                  "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:81.0) Gecko/20100101 Firefox/81.0",
+                Accept:
+                  "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+                "Accept-Language": "en-US,en;q=0.5",
+                "Upgrade-Insecure-Requests": "1",
+                Pragma: "no-cache",
+                "Cache-Control": "no-cache",
+              },
+              method: "GET",
+              mode: "cors",
             }
+          );
+          const playerstats = await response2.text();
+          const split1 = await playerstats.split(">");
+          const last = split1[1];
 
-            const inv = myinv.join("");
+          const data = last.split("<");
+          const playerData = JSON.parse(data[0]);
+          console.log(playerData)
+          var idmember = playerData["id_member"];
+          var namemember = playerData["df_name"];
 
-            const exampleEmbed = new Discord.MessageEmbed();
-            exampleEmbed.setColor("#3c00ff");
-            exampleEmbed.setTitle("Player Profile of " + namemember + "");
-            exampleEmbed.setImage("http://www.dfprofiler.com/signaturereplicate.php?profile="+idmember+'');
+          var wts = thousands_separators(playerData["df_expdeath_weekly"]);
+          var currentcash = thousands_separators(playerData["df_cash"]);
+          var bankcash = thousands_separators(playerData["df_bankcash"]);
+          var creds = thousands_separators(playerData["df_credits"]);
+          var myinv = [];
+          var totalslot = playerData["df_invslots"];
+          var xp = playerData["df_positionx"];
+          var yp = playerData["df_positiony"];
+          var currentPosition = getCorPlayer(xp, yp);
 
-            exampleEmbed.addFields({
-              name: "ℹ️Extra Information:",
-              value:
-                "```🇨🇭Player HP: " +
-                `${playerData["df_hpcurrent"]}` +
-                "/" +
-                `${playerData["df_hpmax"]}` +
-                "\n⚔️Weekly TS: " +
-                wts +
-                "\n🗺️Current Position: " +
-                currentPosition +
-                "\n🛡️Armour name: " +
-                `${playerData["df_armourname"]}` +
-                " " +
-                `${playerData["df_armourhp"]}` +
-                "/" +
-                `${playerData["df_armourhpmax"]}` +
-                "\n💰Current Cash: " +
-                currentcash +
-                "\n🏦Bank Cash: " +
-                bankcash +
-                "\n🚮Credits: " +
-                creds +
-                " ```",
-            });
+          for (var i = 1; i < totalslot; i++) {
+            const inv = playerData["df_inv" + i + "_type"];
+            const inven = "Slot " + i + " : " + inv + "\n";
+            myinv.push(inven);
+          }
 
-            exampleEmbed.addFields({
-              name: "🎒Current Inventory:",
-              value: "```" + inv + "```",
-            });
+          const inv = myinv.join("");
 
-            exampleEmbed.setTimestamp();
-            exampleEmbed.setFooter("Kannazuki Bot 🤖");
-            message.channel.send(exampleEmbed);
-            //message.channel.send('Additonal Information:\n```Player HP: '+`${playerData['df_expdeath_weekly']}`+'\nWeekly TS: '+`${playerData['df_expdeath_weekly']}`+'\n Armour name: '+`${playerData['df_armourname']}`+' '+`${playerData['df_armourhp']}`+'/'+`${playerData['df_armourhpmax']}`+'\n    ```');
-          })();
-        }
-      })();
+          const exampleEmbed = new Discord.MessageEmbed();
+          exampleEmbed.setColor("#3c00ff");
+          exampleEmbed.setTitle("Player Profile of " + namemember + "");
+          exampleEmbed.setImage("http://www.dfprofiler.com/signaturereplicate.php?profile="+idmember+'');
+
+          exampleEmbed.addFields({
+            name: "ℹ️Extra Information:",
+            value:
+              "```🇨🇭Player HP: " +
+              `${playerData["df_hpcurrent"]}` +
+              "/" +
+              `${playerData["df_hpmax"]}` +
+              "\n⚔️Weekly TS: " +
+              wts +
+              "\n🗺️Current Position: " +
+              currentPosition +
+              "\n🛡️Armour name: " +
+              `${playerData["df_armourname"]}` +
+              " " +
+              `${playerData["df_armourhp"]}` +
+              "/" +
+              `${playerData["df_armourhpmax"]}` +
+              "\n💰Current Cash: " +
+              currentcash +
+              "\n🏦Bank Cash: " +
+              bankcash +
+              "\n🚮Credits: " +
+              creds +
+              " ```",
+          });
+
+          exampleEmbed.addFields({
+            name: "🎒Current Inventory:",
+            value: "```" + inv + "```",
+          });
+
+          exampleEmbed.setTimestamp();
+          exampleEmbed.setFooter("Kannazuki Bot 🤖");
+          message.channel.send(exampleEmbed);
+          //message.channel.send('Additonal Information:\n```Player HP: '+`${playerData['df_expdeath_weekly']}`+'\nWeekly TS: '+`${playerData['df_expdeath_weekly']}`+'\n Armour name: '+`${playerData['df_armourname']}`+' '+`${playerData['df_armourhp']}`+'/'+`${playerData['df_armourhpmax']}`+'\n    ```');
+        })();
+
+
+
+      }else{
+        var string1 = playername;
+        var rep = string1.split(' ').join('_');
+        const playername_link = rep;
+
+        var string2 = playername;
+        var replus = string2.split(' ').join('+');
+        const playername_plus = replus;
+        // console.log('a number');
+        (async () => {
+          const response =  await fetch("https://www.dfprofiler.com/profile/autocomplete/"+playername_link+"", {
+            "credentials": "include",
+            "headers": {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0",
+                "Accept": "application/json, text/javascript, */*; q=0.01",
+                "Accept-Language": "en-US,en;q=0.5",
+                "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+                "X-Requested-With": "XMLHttpRequest"
+            },
+            "referrer": "https://www.dfprofiler.com/",
+            "body": "dataType=json&query="+playername_plus+"",
+            "method": "POST",
+            "mode": "cors"
+        });
+  
+          var data = await response.json();
+  
+          if (!data.length){
+            message.channel.send(
+              'Player "' + playername + '" is not found or not in database.'
+            );
+          }else{
+            const memberid = data[0]['player_id'];
+            (async () => {
+              const response2 = await fetch(
+                "http://www.hollowprestige.com/umbraco/api/df/getplayerstats?userId="+memberid+"",
+                {
+                  credentials: "omit",
+                  headers: {
+                    "User-Agent":
+                      "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:81.0) Gecko/20100101 Firefox/81.0",
+                    Accept:
+                      "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+                    "Accept-Language": "en-US,en;q=0.5",
+                    "Upgrade-Insecure-Requests": "1",
+                    Pragma: "no-cache",
+                    "Cache-Control": "no-cache",
+                  },
+                  method: "GET",
+                  mode: "cors",
+                }
+              );
+              const playerstats = await response2.text();
+              const split1 = await playerstats.split(">");
+              const last = split1[1];
+  
+              const data = last.split("<");
+              const playerData = JSON.parse(data[0]);
+  
+              var idmember = playerData["id_member"];
+              var namemember = playerData["df_name"];
+  
+              var wts = thousands_separators(playerData["df_expdeath_weekly"]);
+              var currentcash = thousands_separators(playerData["df_cash"]);
+              var bankcash = thousands_separators(playerData["df_bankcash"]);
+              var creds = thousands_separators(playerData["df_credits"]);
+              var myinv = [];
+              var totalslot = playerData["df_invslots"];
+              var xp = playerData["df_positionx"];
+              var yp = playerData["df_positiony"];
+              var currentPosition = getCorPlayer(xp, yp);
+  
+              for (var i = 1; i < totalslot; i++) {
+                const inv = playerData["df_inv" + i + "_type"];
+                const inven = "Slot " + i + " : " + inv + "\n";
+                myinv.push(inven);
+              }
+  
+              const inv = myinv.join("");
+  
+              const exampleEmbed = new Discord.MessageEmbed();
+              exampleEmbed.setColor("#3c00ff");
+              exampleEmbed.setTitle("Player Profile of " + namemember + "");
+              exampleEmbed.setImage("http://www.dfprofiler.com/signaturereplicate.php?profile="+idmember+'');
+  
+              exampleEmbed.addFields({
+                name: "ℹ️Extra Information:",
+                value:
+                  "```🇨🇭Player HP: " +
+                  `${playerData["df_hpcurrent"]}` +
+                  "/" +
+                  `${playerData["df_hpmax"]}` +
+                  "\n⚔️Weekly TS: " +
+                  wts +
+                  "\n🗺️Current Position: " +
+                  currentPosition +
+                  "\n🛡️Armour name: " +
+                  `${playerData["df_armourname"]}` +
+                  " " +
+                  `${playerData["df_armourhp"]}` +
+                  "/" +
+                  `${playerData["df_armourhpmax"]}` +
+                  "\n💰Current Cash: " +
+                  currentcash +
+                  "\n🏦Bank Cash: " +
+                  bankcash +
+                  "\n🚮Credits: " +
+                  creds +
+                  " ```",
+              });
+  
+              exampleEmbed.addFields({
+                name: "🎒Current Inventory:",
+                value: "```" + inv + "```",
+              });
+  
+              exampleEmbed.setTimestamp();
+              exampleEmbed.setFooter("Kannazuki Bot 🤖");
+              message.channel.send(exampleEmbed);
+              //message.channel.send('Additonal Information:\n```Player HP: '+`${playerData['df_expdeath_weekly']}`+'\nWeekly TS: '+`${playerData['df_expdeath_weekly']}`+'\n Armour name: '+`${playerData['df_armourname']}`+' '+`${playerData['df_armourhp']}`+'/'+`${playerData['df_armourhpmax']}`+'\n    ```');
+            })();
+          }
+  
+        })();
+      }
     } else {
       message.channel.send("Invalid Command");
     }
@@ -961,56 +1041,84 @@ client.on("message", (message) => {
 
   async function getPlayerID(playername){
 
-    const response = await fetch(
-      "http://www.dfprofiler.com/search/simple",
-      {
-        credentials: "include",
-        headers: {
-          "User-Agent":
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:81.0) Gecko/20100101 Firefox/81.0",
-          Accept:
-            "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-          "Accept-Language": "en-US,en;q=0.5",
-          "Content-Type": "application/x-www-form-urlencoded",
-          "Upgrade-Insecure-Requests": "1",
-          Pragma: "no-cache",
-          "Cache-Control": "no-cache",
-        },
-        referrer: "http://www.dfprofiler.com/",
-        body: "username=" + playername + "&csrf=",
-        method: "POST",
-        mode: "cors",
-      }
-    );
+    var string1 = playername;
+    var rep = string1.split(' ').join('_');
+    const playername_link = rep;
 
-    const resultdata = await response
-    const result = resultdata.url
-    return await result
+    var string2 = playername;
+    var replus = string2.split(' ').join('+');
+    const playername_plus = replus;
+    const response =  await fetch("https://www.dfprofiler.com/profile/autocomplete/"+playername_link+"", {
+            "credentials": "include",
+            "headers": {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0",
+                "Accept": "application/json, text/javascript, */*; q=0.01",
+                "Accept-Language": "en-US,en;q=0.5",
+                "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+                "X-Requested-With": "XMLHttpRequest"
+            },
+            "referrer": "https://www.dfprofiler.com/",
+            "body": "dataType=json&query="+playername_plus+"",
+            "method": "POST",
+            "mode": "cors"
+        });
+
+          const data = await response.json();
+  
+          if (!data.length){
+            const result = 'No data';
+            return result
+          }else{
+            const resultdata = data;
+            return await resultdata
+          }
+
 
   }
 
   async function getPrivateTrades(playerid){
-    var data1 = {
-      userId: playerid,
-      stalkType: "private" // sellinglist  // private
-    };
-    var sentdata = Object.keys(data1)
-          .map((key) => key + "=" + data1[key])
-          .join("&");
-    var url = 'http://meaty.dfprofiler.com/stalker.php?function=browseTrades'
-    const result = await axios({
-      method: "post",
-      url: url,
-      data: sentdata,
-    })
-    .then(function (response) {
-      return response.data
-    })
-    .catch(function (error) {
-      console.log(error);
-    });
+    const response = await fetch("https://fairview.deadfrontier.com/onlinezombiemmo/trade_search.php", {
+      "credentials": "include",
+      "headers": {
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0",
+          "Accept": "*/*",
+          "Accept-Language": "en-US,en;q=0.5",
+          "Content-Type": "application/x-www-form-urlencoded",
+          "X-Requested-With": "XMLHttpRequest",
+          "Pragma": "no-cache",
+          "Cache-Control": "no-cache"
+      },
+      "referrer": "https://fairview.deadfrontier.com/onlinezombiemmo/index.php?page=35",
+      "body": "hash=4d6b4f4acef854ab13c392ef4941cf50&pagetime=1625997863&tradezone=&searchname=&search=trades&searchtype=private&memID="+playerid+"&category=&profession=",
+      "method": "POST",
+      "mode": "cors"
+  });
+
+  const data = await response.text();
+  var privatedata = []
+  let str = data;
+  let obj = Object.fromEntries(new URLSearchParams(str));
   
-  return result
+
+  for (p=0; p<obj['tradelist2_maxresults'];p++){
+          var raw = {}
+          raw['private_to_mem_id'] = obj['tradelist2_'+p+'_id_member'];
+          raw['private_to'] = obj['tradelist2_'+p+'_member_name'];
+          raw['private_trade_id'] = obj['tradelist2_'+p+'_trade_id'];
+          raw['private_item'] = obj['tradelist2_'+p+'_itemname'];;
+          raw['private_price'] = obj['tradelist2_'+p+'_price'];
+          raw['private_orgitem'] = obj['tradelist2_'+p+'_item']; 
+          privatedata.push(raw)
+  }
+  // console.log(privatedata.length)
+
+  if (privatedata.length < 0){
+    var nodata = "No data";
+    return nodata
+  }else{
+     return privatedata
+  }
+
 } 
 
 });
