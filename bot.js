@@ -33,7 +33,7 @@ client.on("ready", () => {
     console.log(" - " + guild.name);
   });
 });
-client.on("message", (message) => {
+client.on("messageCreate", (message) => {
   if (message.author.bot) return;
   if (message.content.startsWith(PREFIX)) {
     const [CMD_NAME, ...args] = message.content
@@ -41,18 +41,18 @@ client.on("message", (message) => {
       .substring(PREFIX.length)
       .split(/\s+/);
 
-    if (CMD_NAME === "chsb") {
+    if (CMD_NAME === "chsb-dead") {
       if (args.length === 0) return message.reply("Give me an item name sier");
       var items = args.join(" ");
       var data1 = {
-        tradezone: "13",
+        tradezone: "4",
         category: "0",
-        search: items,
+        term: items,
       };
       var sentdata = Object.keys(data1)
         .map((key) => key + "=" + data1[key])
         .join("&");
-      var url = "http://meaty.dfprofiler.com/browsemarketplace.php?function=browseMarketWithCredits";
+      var url = "https://www.dfprofiler.com/newmarket/search";
 
       axios({
         method: "post",
@@ -117,9 +117,8 @@ client.on("message", (message) => {
               { name: "Seller", value: resseller5, inline: true }
             )
             .setTimestamp()
-            .setFooter("Kannazuki Bot🤖");
-
-          message.channel.send(exampleEmbed);
+            .setFooter({text: "Kannazuki Bot 🤖"});
+            message.channel.send({ embeds: [exampleEmbed] });
         })
         .catch(function (error) {
           message.channel.send("Item not found mister");
@@ -136,34 +135,8 @@ client.on("message", (message) => {
           });
         }
         exampleEmbed.setTimestamp();
-        exampleEmbed.setFooter("Kannazuki Bot🤖");
-
-        message.channel.send(exampleEmbed);
-      });
-    } else if (CMD_NAME === "kanawts") {
-      getkanaCTS().then((data) => {
-        const sortedByScore = data.sort(function (a, b) {
-          return b.score - a.score;
-        });
-
-        const exampleEmbed = new Discord.MessageEmbed();
-        exampleEmbed.setColor("#3c00ff");
-        exampleEmbed.setTitle("🔥Kannazuki - Weekly CTS");
-
-        for (var i = 0; i < sortedByScore.length; i++) {
-          if (data[i]["score"] != "0") {
-            const score = thousands_separators(data[i]["score"]);
-
-            exampleEmbed.addFields({
-              name: data[i]["name"] + "(Lvl " + data[i]["level"] + ")",
-              value: score + " EXP\n",
-            });
-          }
-        }
-        exampleEmbed.setTimestamp();
-        exampleEmbed.setFooter("Kannazuki Bot🤖");
-
-        message.channel.send(exampleEmbed);
+        exampleEmbed.setFooter({text: "Kannazuki Bot 🤖"});
+        message.channel.send({ embeds: [exampleEmbed] });
       });
     } else if (CMD_NAME === "help") {
       const exampleEmbed = new Discord.MessageEmbed()
@@ -175,14 +148,12 @@ client.on("message", (message) => {
           name: "!cts",
           value: "-Show Top 10 weekly Clan Top Survivor",
         })
-        .addFields({ name: "!boss", value: "-Show current boss (DOWN too lazy to revise the code :P" })
         .addFields({ name: "!profile playername", value: "-Player profile" })
-        .addFields({ name: "!kanawts", value: "-Show Kannazuki WeeklyTS" })
+        .addFields({ name: "!1d,7d,1m,6m <watchlist>", value: "History Chart" })
         .addFields({ name: "!private playername", value: "-Show Player Private Trade" })
         .setTimestamp()
-        .setFooter("Kannazuki Bot🤖-GlennRhee");
-
-      message.channel.send(exampleEmbed);
+        .setFooter({text: "Kannazuki Bot 🤖 -GlennRhee"});
+        message.channel.send({ embeds: [exampleEmbed] });
     } else if (CMD_NAME === "boss") {
       (async () => {
         const response = await fetch("https://www.dfprofiler.com/bossmap/json", {
@@ -600,7 +571,7 @@ client.on("message", (message) => {
           var yp = playerData["df_positiony"];
           var currentPosition = getCorPlayer(xp, yp);
 
-          for (var i = 1; i < totalslot; i++) {
+          for (var i = 0; i < totalslot; i++) {
             const inv = playerData["df_inv" + i + "_type"];
             const inven = "Slot " + i + " : " + inv + "\n";
             myinv.push(inven);
@@ -645,8 +616,8 @@ client.on("message", (message) => {
           });
 
           exampleEmbed.setTimestamp();
-          exampleEmbed.setFooter("Kannazuki Bot 🤖");
-          message.channel.send(exampleEmbed);
+          exampleEmbed.setFooter({text: "Kannazuki Bot 🤖"});
+          message.channel.send({ embeds: [exampleEmbed] });
           //message.channel.send('Additonal Information:\n```Player HP: '+`${playerData['df_expdeath_weekly']}`+'\nWeekly TS: '+`${playerData['df_expdeath_weekly']}`+'\n Armour name: '+`${playerData['df_armourname']}`+' '+`${playerData['df_armourhp']}`+'/'+`${playerData['df_armourhpmax']}`+'\n    ```');
         })();
 
@@ -724,7 +695,7 @@ client.on("message", (message) => {
               var yp = playerData["df_positiony"];
               var currentPosition = getCorPlayer(xp, yp);
   
-              for (var i = 1; i < totalslot; i++) {
+              for (var i = 0; i < totalslot; i++) {
                 const inv = playerData["df_inv" + i + "_type"];
                 const inven = "Slot " + i + " : " + inv + "\n";
                 myinv.push(inven);
@@ -769,8 +740,8 @@ client.on("message", (message) => {
               });
   
               exampleEmbed.setTimestamp();
-              exampleEmbed.setFooter("Kannazuki Bot 🤖");
-              message.channel.send(exampleEmbed);
+              exampleEmbed.setFooter({text: "Kannazuki Bot 🤖"});
+              message.channel.send({ embeds: [exampleEmbed] });
               //message.channel.send('Additonal Information:\n```Player HP: '+`${playerData['df_expdeath_weekly']}`+'\nWeekly TS: '+`${playerData['df_expdeath_weekly']}`+'\n Armour name: '+`${playerData['df_armourname']}`+' '+`${playerData['df_armourhp']}`+'/'+`${playerData['df_armourhpmax']}`+'\n    ```');
             })();
           }
