@@ -19,7 +19,11 @@ const { JSDOM } = jsdom;
 
 const Discord = require("discord.js");
 const console = require("console");
-const client = new Client();
+
+const client = new Discord.Client(
+  {intents: ["GUILDS", "GUILD_MESSAGES" , "GUILD_WEBHOOKS" ,"GUILD_SCHEDULED_EVENTS"]}
+  ); //create new client intent
+
 const PREFIX = "!";
 
 client.on("ready", () => {
