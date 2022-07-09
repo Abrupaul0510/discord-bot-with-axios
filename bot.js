@@ -943,16 +943,16 @@ client.on("messageCreate", (message) => {
       if (err) throw err;
       if(result.length > 0){
         var watchlist = [];
-        // result.forEach(row => {
-        //   watchlist.push([row.items]);
-        //   });
+        result.forEach(row => {
+          watchlist.push([row.items]);
+          });
           const exampleEmbed = new Discord.MessageEmbed();
           exampleEmbed.setColor("#3c00ff");
           exampleEmbed.setTitle("🔥On Kanna's Watchlist🔥");
-          for (var i = 0; i < result.length; i++) {
+          for (var i = 0; i < watchlist.length; i++) {
             exampleEmbed.addFields({
               name: "-------------",
-              value: result[i]["items"],
+              value: watchlist[i]["items"],
             });
           }
           message.channel.send({ embeds: [exampleEmbed] });
@@ -1361,6 +1361,7 @@ const watchjob = schedule.scheduleJob('*/59 * * * *', function(){
        
             }
             // console.log(data);
+
            })
 
            });
