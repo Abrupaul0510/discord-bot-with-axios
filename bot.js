@@ -1334,28 +1334,33 @@ const watchjob = schedule.scheduleJob('*/59 * * * *', function(){
         result.forEach(row => {
           const items = row.items; ///NAME IN WATCH LIST
           getitems(items).then(data =>{
-            // console.log(data);
-          const item_name = data.itemname;
-          const item_price = data.itemprice; 
-          // console.log(item_name);   ///ITEM NAME
-          // console.log(item_price);  ///ITEM PRICE
 
-          const consql = mysql.createConnection({
-            host: process.env.HOST_DB,  
-            user: process.env.USER_DB,
-            password: process.env.PASS_DB,
-            database: process.env.DB_DB
+            if(data.length==0){
+              console.log("No data found")
+
+            }else{
+              const item_name = data.itemname;
+              const item_price = data.itemprice; 
+              // console.log(item_name);   ///ITEM NAME
+              // console.log(item_price);  ///ITEM PRICE
+    
+              const consql = mysql.createConnection({
+                host: process.env.HOST_DB,  
+                user: process.env.USER_DB,
+                password: process.env.PASS_DB,
+                database: process.env.DB_DB
+                });
+                consql.connect(function(err) {
+                if (err) throw err;
+                  consql.query("INSERT INTO pricehistory3( itemname, itemprice) VALUES ( '"+item_name+"' , "+item_price+");", function (err, result, fields) {
+                   if (err) throw err;
+                     console.log(result.affectedRows);
+                     console.log(item_name+' Insert Succesfully');
+               });
             });
-            consql.connect(function(err) {
-            if (err) throw err;
-              consql.query("INSERT INTO pricehistory3( itemname, itemprice) VALUES ( '"+item_name+"' , "+item_price+");", function (err, result, fields) {
-               if (err) throw err;
-                 console.log(result.affectedRows);
-                 console.log(item_name+' Insert Succesfully');
-           });
-        });
-
-
+       
+            }
+            // console.log(data);
            })
 
            });
