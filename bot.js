@@ -1334,8 +1334,9 @@ const watchjob = schedule.scheduleJob('*/59 * * * *', function(){
         result.forEach(row => {
           const items = row.items; ///NAME IN WATCH LIST
           getitems(items).then(data =>{
+            console.log(data.length);
 
-            if(data.length==0){
+            if(data.length>0){
               console.log("No data found")
 
             }else{
