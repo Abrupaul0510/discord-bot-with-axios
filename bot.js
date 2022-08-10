@@ -1336,9 +1336,8 @@ const watchjob = schedule.scheduleJob('*/59 * * * *', function(){
           getitems(items).then(data =>{
             console.log(data.length);
 
-            if(data.length>0){
-              console.log("No data found")
-
+            if(data === undefined){
+              console.log(items + " Error with this")
             }else{
               const item_name = data.itemname;
               const item_price = data.itemprice; 
